@@ -14,7 +14,9 @@ output:
 
 - Last week we talked about how data is biased and how the measurement of things can alter the thing being studied. (I know, so meta.)
 - This week we will talk a bit more about the ethics of data science/research writ large.
-- And we are going to review some of the skills/ideas from the exam and talk more about joining.
+- Then we will segue to a discussion about what we have learned thus far and how it relates to the quiz.
+- We will do some examples of single table transformations.
+- And then we will introduce two brand new statistical ideas: Risk Ratio and Odds Ratio
 
 
 
