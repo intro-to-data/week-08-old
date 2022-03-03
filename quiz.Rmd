@@ -1,0 +1,348 @@
+---
+title: "Quiz 01 - Midterm"
+output: html_notebook
+---
+
+# Instructions
+
+The goal of this quiz is to help me understand what you have learned thus far in our time together. To complete the tasks in this exam, you may use the following:
+
+  - Any/all class lecture notes, labs, cheat sheets from RStudio, etc.
+  - Any assigned reading/video.
+  - Google (If you are really desperate, Bing.)
+  - Stack Overflow
+
+However, I must require you to complete your own exam. You may not help anyone else in this class and you may not accept help from anyone else in the class. If you have any questions, please ask me. Any clarifications I make will be announced to the entire class. 
+
+This quiz focuses on single table data transformations, plotting, and linear regression.
+
+# SETUP
+
+Remember, you must load your packages (`tidyverse`, etc.) and data for EACH session in R. Just because you had the `tidyverse` loaded last time means nothing for the current session. A new session is started each time you log into RStudio Cloud.
+
+```{r setup, message = FALSE}
+library(Stat2Data)
+library(tidyverse)
+options(scipen = 999)
+Appointments <- read_csv("./data/Appointments.csv")
+data(HighPeaks)
+```
+
+# Appointments
+
+Remember to look at the data before trying to use it. This is another one of those annoying capital letter situations.
+
+```{r}
+Appointments
+```
+
+## About Appointments
+
+A no-show appointment occurs when a patient makes an appointment with their doctor, receives all of the instructions, and does not come to their appointment. Understanding the likelihood of a patient skipping their appointment is helpful for providers and their staff.
+
+Although this dataset is specific to Brazil and is taken from Kaggle, this is a very real problem we work on here in the Capital District. With that said, this data is specific to the context from which it was collected. Do not assume the patterns seen in this data are necessarily true here. Context matters.
+
+<https://www.kaggle.com/joniarroba/noshowappointments>
+
+Each row of data is a *single appointment*. A patient may have more than one appointment (many do).
+
+## Data Dictionary
+
+  - PatientId: Unique identifier for that patient.
+  - AppointmentID: Unique identifier for each appointment
+  - Gender: Male (M) or Female (F).
+  - AppointmentDate: The Date (YYYY-MM-DD) of the appointment
+  - AppointmentDay: An abbreviation of the name of the day of the
+    appointment (Mon, Tue, etc.)
+  - AppointmentMonth: The abbreviation of the name of the month of the
+    appointment.
+  - Age: Patient age, on the day of the appointment, in years.
+  - Neighbourhood: Where the appointment takes place.
+  - Scholarship: TRUE or FALSE
+      - For more detail:
+        <https://en.wikipedia.org/wiki/Bolsa_Fam%C3%ADlia>
+  - Hipertension: Does the patient have hypertension? TRUE or FALSE
+      - Note the unusual spelling of this column.
+  - Diabetes: Does the patient have diabetes? TRUE or FALSE
+  - Alcoholism: Does the patient have diabetes? TRUE or FALSE
+  - Handcap: Does the patient have a handicap? TRUE or FALSE
+      - Note the unusual spelling of this column.
+      - Not my typo.
+  - ReceivedSMS: Did the patient receive a SMS? TRUE or FALSE
+  - NoShow: Did the patient no-show? TRUE or FALSE
+      - **Hint:** R treats Boolean TRUE values as equal to 1 and FALSE
+        values as equal to 0. You can sum a column of TRUE/FALSE values
+        to get the count of TRUE.
+
+## Useful Reminders
+
+- Use a SINGLE EQUALS SIGN to assign the value of a parameter in a function.
+- Use DOUBLE EQUAL SIGNS for boolean tests (in filter).
+- Use `<-` to assign the final results to a new table for use later.
+
+## Task 01: How Many No-Shows?
+
+- Question: How many appointments were recorded as a no-show?
+- Answer:
+
+Helpful Hints:
+
+- You may notice that NoShow is a TRUE/FALSE column, a Boolean.
+    - R handles these values in a special way.
+    - TRUE == 1
+    - FALSE == 0
+    - So, if you `sum()` a column of TRUE/FALSE values the end result is the count of rows equal to TRUE.
+    - Yes, this is smashingly convenient.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 02: No-Shows by Neighbourhood?
+
+- Question: Which neighbourhood had the most no-shows?
+- Answer: 
+
+Helpful Hints;
+
+- Spelling matters. 👀
+- You can use your code from Task 01 to help you.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 03: Plot No-Shows by Neighbourhood
+
+- Question: Plot No-Shows by neighborhood and upload the graph to Canvas.
+- Answer: 
+
+Helpful Hints:
+
+- This should be a bar plot. You can use, geom_bar or geom_col
+- I suggest you make Neighbourhood your y-axis aesthetic.
+    - When you maximize the size of the plot, it is legible.
+    - If you don't . . . . . yeah. It won't be.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 04: 822145925426128
+
+- Questions (2):
+  - How many appointments did patient 822145925426128 (`PatientID`) have?
+  - How many no-shows did 822145925426128 have?
+- Answer: 
+  - Appointments
+  - No-shows:
+
+Helpful Hints:
+
+- You can do this in a single code chunk or two. I don't care.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 05: No-Shows For Patients Over 50
+
+- Question:  How many no-shows were recorded by patients over the age of 50?
+- Answer: 
+
+Helpful Hint: Answer with an integer, using normal rounding conventions.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 06: Average Age NoShow
+
+- Questions (2):
+  - What is the average age of a no-show patient (`mean()`)?
+  - What is the standard deviation of the age of a no-show patient (`sd()`)?
+- Answers: 
+  - Average Age:
+  - Standard Deviation
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 07: ReceivedSMS
+
+Question: Who had a higher no-show rate? Patients who received a SMS message or those who did not?
+Answer: 
+
+Helpful Hints:
+
+  - One popular intervention for no-shows is to call patients before their appointment, to remind them of their upcoming appointment.
+  - In `Appointments` we have a column called `ReceivedSMS`. Where `TRUE`, these patients received a text message reminding them of their upcoming appointment.
+  - Who had a higher no-show rate?
+      - ReceivedSMS == TRUE
+      - ReceivedSMS == FALSE
+  - To answer this question, you will need to group by `ReceivedSMS` and then calculate the rate of no-shows for each group.
+  - Remember, you can name the columns in `summarize()`.
+      - You will need two columns. And PLEASE NAME THEM to make them usable later.
+      - One column for the total number of No Shows.
+      - One column for the total number of Appointments.
+      - If you do No Shows/Appointments, you will get the PERCENTAGE of no shows. Put another way, the number of expected no-shows per 100 appointments.
+      - But this will work better if you calculate a RATE of no-shows per 1,000 appointments. This is how we would really show this.
+  - Use `mutate()` to create a new column for the rate of No Shows.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+Do these results surprise you? They might. Try to think of one or two reasons why this could be true.
+
+## Task 08: Chronic Conditions
+
+Question: Which group has a higher no-show rate? Patients with hypertension, diabetes or the over-all population?
+Answer: 
+
+Helpful Hints:
+
+- First Step:
+    - Create a new table, called `NoShowRateHyper` which compares the no-show rate of patients with/without hypertension.
+        - Column `Hipertension`
+    - Create a new table, called `NoShowRateDiab` which compares the no-show  rate of patients with/without diabetes.
+    - In all cases, calculate the no-show rate as no-shows per 1,000 appointments.
+- Second Step:
+    - For each of our new datasets, create a bar plot (`geom_col()`) comparing the rate of no-shows per 1,000 appointments.
+        - In other words, you need one plot for `NoShowRateHyper` and one for `NoShowRateDiab`.
+    - Please upload the diabetes plot.
+- Third Step:
+    - Compared to the over-all population, how would you describe the no-show rate of patients with these chronic conditions?
+        - Higher no-show rate
+        - Lower no-show rate
+        - Similar no-show rate
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 09: Distribution of No-Shows
+
+Question: Draw a density or histogram plot of the no-shows per patient.
+Answer: 
+
+Helpful Hints:
+
+  - Create a new table, called `NoShowCounts`.
+  - Remember:
+      - The `Appointments` table is at the appointment grain.
+      - Patients can/do have more than one appointment.
+      - This new table, `NoShowCounts`, will be at the patient grain.
+      - This means each row in `NoShowCounts` should be a single patient and no patient should duplicate.
+  - Create a histogram showing the distribution of no-show appointments.
+      - Upload your histogram of no-shows.
+  - How many distinct patients are in your `NoShowCounts` table?
+      - If you made your table right, this should be the number of rows in your `NoShowCounts` table.
+  - How would you describe the distribution of no-shows?
+      - Normally distributed
+      - Skewed
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 10: New Column Over50
+
+  - Create a column which identifies patients who are over 50 years old.
+  - Call this new column `Over50`. (Use `mutate()`)
+  - This column should contain TRUE/FALSE values for each appointment. In other words, this new column goes into the `Appointments` table, not a new table.
+  - How would you describe the no-show rate of patients over 50 compared to other patients?
+      - Higher
+      - Lower
+      - About the same
+  - Once you have created your new column, this is very similar to Task 7.  
+
+```{r}
+## YOUR CODE HERE!
+```
+
+# High Peaks
+
+```{r}
+HighPeaks
+```
+
+## Details
+Forty-six mountains in the Adirondacks of upstate New York are known as the High Peaks with elevations near or above 4000 feet (although modern measurements show a couple of the peaks are actually slightly under 4000 feet). A goal for hikers in the region is to become a "46er" by scaling each of these peaks. This dataset gives information about the hiking trails up each of these peaks.
+
+Source: High Peaks data avaialble at http://www.adirondack.net/tour/hike/highpeaks.cfm. Thanks to Jessica Chapman at St. Lawrence University for recommending this dataset.
+
+## Data Dictionary:
+
+- Peak: Name of the mountain
+- Elevation: Elevation at the highest point (in feet)
+- Difficulty: Rating of difficulty of the hike: 1 (easy) to 7 (most difficult)
+- Ascent: Vertical ascent (in feet)
+- Length: Length of hike (in miles)
+- Time: Expected trip time (in hours)
+
+## Task 11
+
+- Questions (2):
+  - Plot estimated time to complete the hike as a function of the number of feet in the ascent. Upload this plot to Canvas.
+  - Based on this plot, how would you describe the relationship between `Ascent` and `Time` and is `Ascent` a good predictor of `Time`?
+- Answer:
+
+Helpful Hints:
+
+- When we say Time as a function Ascent, we mean that Time is our dependent variable and Ascent is our independent variable.
+- This can also be written as Time~Ascent.
+- In answering this question, you may use information you learn in the following tasks as well.
+- As with other such "essay" questions, I am looking for 2-3 sentences. I am not expecting you to write a five-paragraph theme.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+
+## Task 12
+
+- Questions:
+    - Create a linear model which shows Time as a function of Ascent.
+    - What is the Adjusted R-Squared value?
+- Answer:
+
+Helpful Hints: 
+
+- The `lm()` function is your friend.
+- To get the model details, do not use `summarize()`, use `summary()`.
+- This is a multiple choice question, so don't worry about rounding.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+## Task 13
+
+- Questions:
+    - Create a linear model with Time as a function of Length.
+    - I would also recommend plotting this relationship.
+    - Compared to our model from Tasks 11 and 12, how would you describe this model?
+        - Better
+        - Worse
+        - About the same
+    - And why?
+- Answer:
+
+Helpful Hint: 
+
+- I am not expecting you to write a five-paragraph theme.
+- Using a plot to support your answer may help you.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+
+
+# Have a great spring break!!!
+
+I'll leave you with a little plotting humor.
+
+![](https://imgs.xkcd.com/comics/convincing.png)

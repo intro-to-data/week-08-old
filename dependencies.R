@@ -1,9 +1,9 @@
-packages <- 
-  c(
-    "broom",
-    "knitr",
-    "rmarkdown",
-    "tidymodels",
-    "tidyverse"
-  )
-install.packages(packages)
+## Simple script used to install all packages needed by the lecture/lab.
+
+p <- c(
+  "knitr",
+  "markdown",
+  "tidyverse",
+  "Stat2Data"
+)
+install.packages(p)
