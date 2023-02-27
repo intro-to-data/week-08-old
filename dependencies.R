@@ -2,7 +2,11 @@
 
 p <- c(
   "knitr",
+  "janitor",
   "markdown",
+  "rio",
+  "rmarkdown",
+  "shiny",
   "tidyverse",
   "Stat2Data"
 )
