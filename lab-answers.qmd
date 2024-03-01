@@ -1,0 +1,314 @@
+---
+title: "HAWKS!"
+format: html
+---
+
+
+
+# Setup
+
+Please remember, capitalization matters! These data sets are Capitalized AND use caps in the column names rather than underscores.
+
+```{r}
+#| label: setup
+#| message: false
+
+library(janitor)
+library(lubridate)
+library(stringr)
+library(rio)
+library(tidymodels)
+library(tidyverse)
+library(Stat2Data)
+data(Hawks)
+
+# This is what we would call a data pipe-line. It makes the data easier to work with.
+hawks <-
+  Hawks |>
+  # Lower case column names. And Spaces rather than SnakeCase.
+  clean_names() |>
+  # Adds some actual dates data and makes species easier to read.
+  mutate(
+    capture_date = ymd(paste(year, month, day)),
+    capture_day_of_week = wday(capture_date, label = TRUE),
+    species_desc = case_when(
+      species == "SS" ~ "Sharp-Shinned",
+      species == "RT" ~ "Red-Tailed",
+      species == "CH" ~ "Cooper's")
+  ) |>
+  # Rearranges our columns.
+  select(
+    band_number,
+    capture_date,
+    capture_time,
+    capture_year = year,
+    capture_month = month,
+    capture_day = day,
+    capture_day_of_week,
+    species,
+    species_desc,
+    age:crop
+)
+rm(Hawks)
+```
+
+
+
+
+# Hawks
+
+## Data
+
+### Description:
+
+Data for a samples of hawks from three different species
+
+### Format:
+
+A data frame with 908 observations on the following 19 variables.
+
+- band_number:	ID band code
+- capture_date:	Date the bird was captured
+- capture_time:	Time of capture (HH:MM)
+- capture_year: 1992-2003 - The year the bird was captured
+- capture_month: 9=September to 12=December - The month the bird was captured
+- capture_day: The day the bird was captured
+- capture_day_of_week: The name of the day of the week the bird was captured
+- species: CH=Cooper's, RT=Red-Tailed, SS=Sharp-Shinned
+- age: A=Adult or I=Immature
+- sex: F=Female or M=Male
+- wing: Length (in mm) of primary wing feather from tip to wrist it attaches to
+- weight: Body weight (in gm)
+- culmen: Length (in mm) of the upper bill from the tip to where it bumps - into the fleshy part of the bird
+- hallux: Length (in mm) of the killing talon
+- tail: Measurement (in mm) related to the length of the tail (invented at the MacBride Raptor Center)
+- standard_tail: Standard measurement of tail length (in mm)
+- tarsus: Length of the basic foot bone (in mm)
+- wing_pit_fat: Amount of fat in the wing pit
+- keel_fat: Amount of fat on the breastbone (measured by feel
+- crop: Amount of material in the crop, coded from 1=full to 0=empty
+
+### Details:
+
+Students and faculty at Cornell College in Mount Vernon, Iowa, collected data over many years at the hawk blind at Lake MacBride near Iowa City, Iowa. The data set that we are analyzing here is a subset of the original data set, using only those species for which there were more than 10 observations. Data were collected on random samples of three different species of hawks: Red-tailed, Sharp-shinned, and Cooper's hawks.
+
+### Source
+
+Many thanks to the late Professor Bob Black at Cornell College for sharing these data with the world.
+
+
+
+# Task 01
+
+- Question: Which breed of hawk has, according to this data, the longest average wing? And what is the average length of this species' wing?
+- Answer: 
+
+Helpful Hints:
+
+- You can drop NA values.
+- The acronyms are defined in the data dictionary above.
+- Since the measurement was already take in millimeters, whole numbers are sufficient. You don't need include anything beyond the decimal.
+
+```{r}
+## YOUR CODE HERE!
+
+```
+
+
+
+# Task 02
+
+- Question: Which breed of hawk has, according to this data, has the smallest variance in weight?
+- Answer: 
+
+Helpful Hints:
+
+- You can drop NA values.
+- Since the measurement is in grams, whole numbers are sufficient.
+- The function to calculate variance is `var()`
+  - Variance is a way to measure how far a set of numbers is spread out.
+  - Variance describes how much a random variable differs from its expected value. 
+  - Variance is the average squared residual from the mean divided by n-1.
+- The standard deviation starts with variance and then adds two additional steps:
+  - The standard deviation is simply the square root of this.
+- Any time you are looking at variance, it is a good idea to also look at average.
+  - Variance/Standard Deviation are values to help us understand the average.
+
+Below, calculate the average, variance, and standard deviation of weight by species.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+
+
+# Task 03 - Distribution of Data
+
+- Those numbers help us understand the distribution of the data.
+    - Variance is a property of the distribution.
+- It is called the 68, 95, 99.7 rule. Which is a dumb name and I did not come up with it.
+  - +/- 1 Standard Deviations: 68%
+  - +/- 2 Standard Deviations: 95%
+  - +/- 3 Standard Deviations: 99.7%
+- And we can see this visually pretty easily.
+- Congrats, I'm going to give you all of this code.
+
+```{r}
+## This calculates our values.
+sd_vals <- 
+  hawks |>
+  group_by(species_desc) |>
+  summarize(
+    avg_wt = mean(weight, na.rm = TRUE),
+    sd_weight = sd(weight, na.rm = TRUE),
+    lower_single_sd = avg_wt - sd_weight,
+    upper_single_sd = avg_wt + sd_weight,
+    lower_double_sd = avg_wt - 2*sd_weight,
+    upper_double_sd = avg_wt + 2*sd_weight,
+    lower_triple_sd = avg_wt - 3*sd_weight,
+    upper_triple_sd = avg_wt + 3*sd_weight,
+  )
+sd_vals
+```
+
+
+One SD:
+
+```{r}
+ggplot(hawks, aes(x = weight, color = species_desc, fill = species_desc)) +
+  geom_density(alpha = .5) +
+  geom_vline(aes(xintercept = avg_wt, color = species_desc), linetype = "solid", linewidth = 1.125, data = sd_vals) +
+  geom_vline(aes(xintercept = lower_single_sd, color = species_desc), linetype = "dashed", linewidth = 1.125, data = sd_vals) +
+  geom_vline(aes(xintercept = upper_single_sd, color = species_desc), linetype = "dashed", linewidth = 1.125, data = sd_vals)
+```
+
+
+Two SD:
+
+```{r}
+ggplot(hawks, aes(x = weight, color = species_desc, fill = species_desc)) +
+  geom_density(alpha = .5) +
+  geom_vline(aes(xintercept = avg_wt, color = species_desc), linetype = "solid", linewidth = 1.125, data = sd_vals) +
+  geom_vline(aes(xintercept = lower_double_sd, color = species_desc), linetype = "dashed", linewidth = 1.125, data = sd_vals) +
+  geom_vline(aes(xintercept = upper_double_sd, color = species_desc), linetype = "dashed", linewidth = 1.125, data = sd_vals)
+```
+
+And all of ↑↑↑ is what I mean when I say "distribution":
+
+- Positive skew: Each has a tail that goes off to the right.
+- Not actually normally distributed. The Sharp Shinned Hawk has two modes (peaks) as does Cooper's Hawk (to a lesser extent).
+- Values between the dark blue lines account for ~68% of the values.
+  - And we can tweak this plot to show is the 95 and 99 percent intervals.
+- A t-test is basically asking if the 95% confidence intervals for the two groups overlap each other's means.
+  - Look carefully at the second plot.
+  - Yes, there are differences in weight by species.
+  - The Sharp Shinned and Cooper's Hawks overlap some at a 95% confidence interval.
+  - There is no overlap with the Red-Tailed hawk and the others.
+  - Because there are three groups, I need to use ANOVA to compare. Different test, same _basic_ principle.
+
+```{r}
+aov(weight ~ species_desc, data = hawks) |> summary()
+```
+
+# Task 04 - Weight ~ Wing Length
+
+- Last week, we started talking about linear regression.
+- A simple definition of linear regression is that it is a scalar response between two or more variables.
+- And this scalar response can tell us how much of the variance of our dependent variable is "explained" by our independent variable(s).
+  - And if R-Squared is high, then we can use the independent variable(s) to predict the dependent variable.
+- Example: Weight ~ Wing Length
+
+- Question: Can we predict the weight of a hawk using only the wing length?
+- Answer:
+
+Hints:
+
+1. Use ggplot to graph the relationship. (geom_point and geom_smooth)
+  - Is the relationship linear?
+  - Do the residuals appear to be normally distributed?
+2. Use the lm function to actually build the model.
+  - Use the Adjusted R-Squared and p-value to discuss the validity/utility of the model.
+  - Call your model lm_wing.
+
+```{r}
+## YOUR CODE HERE!
+ggplot(data = hawks, aes(x = wing, y = weight)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+lm_wing <- lm(weight~wing, data = hawks)
+summary(lm_wing)
+
+```
+
+Our relationship is linear and our residuals are pretty close to normally distributed. 
+
+```{r}
+ggplot(hawks |> gather_residuals(lm_wing), aes(x = resid)) +
+  geom_density()
+```
+
+
+# Task 05 - Groups
+
+- Question: In your plot above, you may have noticed three to four natural groups. Use ggplot to tell me which variable best explains these groups, Sex, Age, or Species.
+- Answer:
+
+Helpful Hint:
+
+- I recommend using color or facet_wrap to figure this out.
+- Copy/paste your ggplot from above to get started.
+
+```{r}
+## YOUR CODE HERE!
+ggplot(
+  data = hawks,
+  aes(x = wing, y = weight, color = species)
+  ) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+
+
+# Task 06 - Groups In Linear Regression
+
+```{r}
+## YUOR CODE HERE
+lm_wing_species <- lm(weight~wing+species + wing*species, data = hawks)
+summary(lm_wing_species)
+```
+
+Now, let's see if we can work out what is happening here.
+
+- I will create a set of "example" hawks.
+- Then we will try to estimate weight, based on our model's values.
+
+```{r}
+example_hawks <- hawks[c(1:5,67:70),]
+
+example_hawks <-
+  example_hawks |>
+  select(band_number, species, wing) |>
+  add_predictions(lm_wing_species)
+  
+example_hawks       
+         
+```
+
+Can we work out how to figure out the predicted value?
+
+```{r}
+y = -259.0838 + 569.5413 + 2.7799*385 + -.7361*385
+
+# OR
+
+y = 310.4575 + 2.0438*385
+
+
+y
+
+
+```
+
+Our values differ slightly due to rounding, not a mistake.

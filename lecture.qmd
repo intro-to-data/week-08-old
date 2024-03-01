@@ -1,0 +1,266 @@
+---
+title: "Intro to Linear Regression"
+format: html
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| message: false
+
+# Pay attention to how I apply formatting to my output.
+# Let's render this document!
+
+library(Stat2Data)
+library(janitor)
+library(knitr)
+library(rio)
+library(tidymodels)
+library(tidyverse)
+options(scipen = 999)
+
+# Import High Peaks data and make column names lower case.
+data(HighPeaks)
+high_peaks <- HighPeaks |> clean_names()
+rm(HighPeaks)
+```
+
+# Data - High Peaks
+
+Our data set today is the same data set you recently used on the midterm.
+
+```{r}
+#| echo: false
+#| tbl-cap: High Peaks Example Data
+high_peaks |> head() |> kable()
+```
+
+Forty-six of the mountains in the Adirondacks of upstate New York are known as the High Peaks with elevations near or above 4000 feet (although modern measurements show a couple of the peaks are actually slightly under 4000 feet). A goal for hikers in the region is to become a "46er" by scaling each of these peaks. This data set gives information about the hiking trails up each of these peaks.
+
+Source: [High Peaks](http://www.adirondack.net/tour/hike/highpeaks.cfm)
+
+## Data Dictionary:
+
+-   `peak`: Name of the mountain
+-   `elevation`: Elevation at the highest point (in feet)
+-   `difficulty`: Rating of difficulty of the hike: 1 (easy) to 7 (most difficult)
+-   `ascent`: Vertical ascent (in feet)
+-   `length`: Length of hike (in miles)
+-   `time`: Expected trip time (in hours)
+
+# Linear Regression
+
+Since the beginning of this class, we have worked with tabular data (data with rows and columns) and we have learned how to do some rather sophisticated data transformations. The next step in our data journey, is learning about linear regression.
+
+As is often the case, Wikipedia is a great place to start: [Linear Regression](https://en.wikipedia.org/wiki/Linear_regression)
+
+-   A statistical model which estimates the linear relationship between a scalar response (dependent variable) and one or more explanatory variables (independent variables).
+-   The case of one explanatory variable is called simple linear regression; for more than one, the process is called multiple linear regression.
+
+## Simple Linear Regression
+
+A simple linear regression always has a formula that looks like:
+
+$$
+y = a + b*x
+$$
+
+Where:
+
+-   $y$ is the dependent variable (scalar response).
+-   $x$ is the independent variable (explanatory variables).
+-   $a$ is the intercept.
+-   $b$ is the slope.
+
+For example, most of you successfully drew this in the midterm.
+
+![](./includes/example01.png){width="90%"}
+
+There are several ways to assess a linear model, including $R^2$.
+
+-   Each observation is unique: No duplicates, no hidden relationships between the rows.
+-   Predictors (independent variables) are distributed normally.
+-   Linear relationship between the dependent and independent variables:
+-   Homoscedasticity of residuals or equal variances: fancy way of saying variance should be equal for all values of x.
+-   No autocorrelation in residuals: Pattern hidden over time (time-series)
+
+So, let's look at an example.
+
+# Example - Time as a function of length
+
+Let's model the time to complete a hike (`time`) as a function of the length of the hike (`length`). At a high-level, there are four things we need to do:
+
+1.  [ ] Decide if we meet the assumptions of linear regression.
+2.  [ ] Build a model (`time~length`).
+3.  [ ] Describe the intercept and slope of the model.
+4.  [ ] Calculate the $R^2$ value of the model to assess goodness of fit of the model.
+
+## Linear Regression Assumptions
+
+-   Question: Are the observations unique?
+-   Answer: As far as we know, yes.
+    -   This data is clearly based on another, more granular data set.
+    -   Numbers such as time, are (hopefully) based on some randomly selected number of hikes.
+    -   If, however, we were to learn that there were two teams of hikers, who each hiked half of the 46ers, we would no longer be able to say this without first assessing to see if our two groups were comparable.
+-   Question: Are the predictors normally distributed?
+-   Answer: Let's see! We only have one, and we can draw a density plot and a histogram of length to answer this.
+
+```{r}
+#| echo: false
+#| fig-cap: Density plot of length
+
+high_peaks |>
+  ggplot(aes(x = length)) +
+  geom_density()
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-cap: Histogram of length
+
+high_peaks |>
+  ggplot(aes(x = length)) +
+  geom_histogram()
+```
+
+This data is skewed to the left a little, but not terribly so. If we decide we are concerned about this, we can `log` our data.
+
+-   Question: Is there a linear relationship between the dependent and independent variables?
+-   Answer: Well, you have to look! And to look, we have to start modeling our data.
+
+It is always a good idea to LOOK at your data because your eyes are actually really good at "seeing" these relationships.
+
+```{r}
+#| echo: false
+#| message: false
+#| fig-cap: Relationship - length~time
+
+ggplot(high_peaks, aes(x = length, y = time)) +
+  geom_point() +
+  geom_smooth(method = lm)
+```
+
+And, yes, this does appear to be linear. We will look at some data that isn't, but not today.
+
+-   Question: Do our residuals have homoscedasticity or exhibit auto-correlation?
+-   Answer: There's no great way to assess auto-correlation here and to assess for equal variance of residuals, we really have to build the model.
+    -   That said, we can also look at our last plot and see that this should be fine.
+    -   If we had outliers on one side or the other which were "leveraging" our model, we might have to remove them, correct them, or possibly abandon our model.
+
+Have you noticed that you already know how to do all of these things? All we have really done here is introduce some new lingo. But now that's going to change, because we are going actually build our first model, using the `tidymodels` package.
+
+## First Model
+
+Remember, our high level tasks?
+
+1.  [x] ~~Decide if we meet the assumptions of linear regression.~~
+
+-   And we did all of that, based on skills we already had!
+
+2.  [ ] Build a model (`time~length`).
+
+-   This is new.
+
+3.  [ ] Describe the intercept and slope of the model.
+
+-   This is new.
+
+4.  [ ] Calculate the $R^2$ value of the model to assess goodness of fit of the model.
+
+-   This is new.
+
+From this point forward, I am going to include the code in our final output.
+
+```{r}
+# Best name for a model, ever!
+
+# This builds the model.
+first_model <-
+  linear_reg() |>
+  fit(formula = time~length, data = high_peaks) 
+
+# This prints it out for us to look at.
+first_model |>
+  tidy() |>
+  kable()
+```
+
+This checks the boxes for tasks two and three, above. We now have a model called `first_model` and we can see both the intercept and slope.
+
+-   Intercept: 2.04
+-   Coefficient of `length`: 0.68
+
+That means our linear regression formula is:
+
+$$
+y = 2.04 + 0.68x
+$$
+
+This tells us that basically any hike in the High Peaks region takes (at least) a little over 2 hours and that for every 1 mile we add to our hike, we will make the hike, on average, 0.68 hours longer. So, if we go for a 3 mile hike . . . .
+
+$$
+y = 2.04 + 0.68*3
+$$
+
+Which tells us to expect a hike that will last a little over 4 hours.
+
+**Important:**
+
+-   This is a model of the High Peaks region and would not be useful in the Catskills, Kansas, or the Himalaya.
+-   This model does not include any information for weather, experience, or fitness of the hikers.
+-   All data and models have limitations. This model is no different.
+
+> ... all models are approximations. Essentially, all models are wrong, but some are useful. However, the approximate nature of the model must always be borne in mind....
+>
+> -- George Box
+
+And with that, we are nearly done. But we still need to assess the normality of our residuals and we need to calculate $R^2$. And to do so, we need to introduce some new language.
+
+-   Actual Value: The outcome value (time) recorded in the data.
+-   Estimated Value: The value estimated/predicted by the model, for the same value of x.
+
+```{r}
+#| fig-cap: Predicted values and residuals
+
+# Some new code but much of this should look familiar.
+high_peaks <- 
+  high_peaks |> 
+  bind_cols( 
+    predict(first_model, new_data = high_peaks)
+  ) |>
+  mutate(residuals = time - .pred)
+
+high_peaks |> head() |> kable()
+```
+
+**Mt. Marcy example:**
+
+-   Actual Value: 10.0 hours
+-   Predicted Value: 12.2
+
+There is a little more than a two hour difference between the actual value of time for a hike on Mt. Marcy and the value predicted by our model. That -2.2 hour difference is called a residual. And as you can see, there is a residual for EVERY row in our data.
+
+And now we can decide if our residuals are normally distributed:
+
+```{r}
+high_peaks |> 
+  ggplot(aes(x = residuals)) +
+  geom_density()
+```
+
+This suggests we could improve this model, because our residuals are clearly long tailed and not normally distributed. This often suggests there is at least one more feature we should add to our model.
+
+But that is for another day.
+
+Let's calculate $R^2$, which is a "goodness of fit" measure for a linear regression. This will fall along a value of 0 - 1 or 0% - 100% (depending on how it is written) and it tells us how much of the variance in our dependent variable, `time`, is explained by our independent variable, `length`.
+
+```{r}
+high_peaks |>
+  rsq(truth = time, estimate = .pred) |>
+  kable()
+```
+
+This tells us that our model explains over 73.7% of the variance in time, which is really conveniently good for a single variable model.
+
+And there you have it, our first linear regression, and an example of a reasonably complex "report" written in Quarto Markdown.
